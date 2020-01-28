@@ -1,3 +1,4 @@
+  
 //
 //  main.cpp
 //  BST
@@ -32,6 +33,10 @@ int main()
 	tree.print(2);
 	cout << "postOrder: ";
 	tree.print(3);
+  	cout << "printLeaves: ";
+  	tree.print(4);
+  	cout << "nivelXnivel: ";
+  	tree.print(5);
 
 	cout << "Search(20): " << tree.search(20) << endl;
 	cout << "Search(25): " << tree.search(25) << endl;
@@ -39,6 +44,14 @@ int main()
 
 	tree.remove(25);
 	cout << "Search(25): " << tree.search(25) << endl;
+
+  	cout << "\nAmount of elements: " << tree.count() << endl;
+  	cout << "Height: " << tree.height() << endl;
+
+  	cout << "Ancestors of 17: ";
+  	tree.ancestors(17);
+
+  	cout << "Level of 2: " << tree.whatLevelamI(2) << endl;
 
 	return 0;
 }
