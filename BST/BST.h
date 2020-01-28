@@ -1,3 +1,4 @@
+  
 //
 //  BST.h
 //  BST
@@ -8,6 +9,7 @@
 
 #include "NodeT.h"
 #include <queue>
+#include <stack>
 using namespace std;
 
 class BST 
@@ -26,11 +28,11 @@ class BST
     void printLeaves(NodeT *r);
     int count(NodeT *r);
     void nivelXnivel();
+    int height(NodeT *r);
 
   public:
     BST();
     ~BST();
-    BST(const BST &copy);
 
     bool search(int data);
     void add(int data);
@@ -41,12 +43,7 @@ class BST
 
     int height();
     void ancestors(int data);
-    int whatlevelamI(int data); // Cambiar nombre
-    
-    int maxWidth();
-    int nearstRelative(int n1, int n2); // Cambiar nombre
-    bool operator==(const BST &ABB);
-    queue<int> toQueue();
+    int whatLevelamI(int data);
 };
 
 BST::BST()
@@ -277,6 +274,12 @@ void BST::print(int x)
     case 3:
       postOrder(root);
       break;
+    case 4:
+      printLeaves(root);
+      break;
+    case 5:
+        nivelXnivel();
+        break;
   }
 
   cout << endl;
@@ -322,7 +325,12 @@ int BST::count(NodeT *r)
 {
   if (r != NULL)
   {
-    return 1 + count(r->getLeft()) + count(r->getRight());
+    int left, right;
+
+    left = count(r->getLeft());
+    right = count(r->getRight());
+
+    return 1 + left + right;
   }
   else
   {
@@ -330,37 +338,98 @@ int BST::count(NodeT *r)
   }
 }
 
+int BST::height(NodeT *r)
+{
+  int max, left, right;
+            
+  if (r == NULL)
+  {
+    return 0;
+  }
+  
+  left = height(r->getLeft());
+  right = height(r->getRight());
+  
+  max = (left > right ? left : right);
+  
+  return 1 + max;
+}
+
 int BST::height()
 {
-  // NOT DONE YET
+  return height(root);
 }
 
 void BST::ancestors(int data)
 {
-  // NOT DONE YET
+  NodeT* curr = root;
+	stack<NodeT*> myStack;
+
+	while (curr != NULL) 
+  {
+		if (curr->getData() == data) 
+    {
+			if (myStack.empty()) 
+      {
+				cout << "No ancestors.\n" << endl;
+			}
+			else 
+      {
+				while (!myStack.empty()) 
+        {
+					cout << myStack.top()->getData()<< " ";
+					myStack.pop();
+				}
+				cout << endl;
+			}
+			return;
+		}
+
+		myStack.push(curr);
+		curr = (curr->getData() > data) ? curr->getLeft() : curr->getRight();
+	}
+
+  cout << "Data not in tree.\n";
 }
 
-int BST::whatlevelamI(int data)
+int BST::whatLevelamI(int data)
 {
-  // NOT DONE YET
+  NodeT* curr = root;
+	int level = 0;
+
+	while (curr != NULL) 
+  {
+		if (curr->getData() == data) 
+    {
+			return level;
+		}
+
+		level++;
+		curr = (curr->getData() > data) ? curr->getLeft() : curr->getRight();
+	}
+
+	return -1;
 }
 
-int BST::maxWidth()
+void BST::nivelXnivel()
 {
-  // NOT DONE YET
-}
+  queue<NodeT*> myQueue;
+  myQueue.push(root);
+  
+  while (!myQueue.empty())
+  {
+    NodeT *curr = myQueue.front();
+    
+    if (curr->getLeft() != NULL)
+    {
+      myQueue.push(curr->getLeft());
+    }
+    if (curr->getRight() != NULL)
+    {
+      myQueue.push(curr->getRight());
+    }
 
-int BST::nearstRelative(int n1, int n2)
-{
-  // NOT DONE YET
-}
-
-bool BST::operator==(const BST &ABB)
-{
-  // NOT DONE YET
-}
-
-queue<int> BST::toQueue()
-{
-  // NOT DONE YET
+    cout << curr->getData() << " ";
+    myQueue.pop();
+  }
 }
