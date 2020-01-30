@@ -1,4 +1,3 @@
-  
 //
 //  BST.h
 //  BST
@@ -10,6 +9,7 @@
 #include "NodeT.h"
 #include <queue>
 #include <stack>
+#include <vector>
 using namespace std;
 
 class BST 
@@ -19,9 +19,11 @@ class BST
     int howManyChildren(NodeT *r);
     int pred(NodeT *r);
     int succ(NodeT *r);
-
+    
     void preOrder(NodeT *r);
+    void preOrderQueue(NodeT *r, queue<int> &myQueue);
     void inOrder(NodeT *r);
+    void convInOrderQueue(NodeT *r, queue<int> &myQueue);
     void postOrder(NodeT *r);
 
     void free(NodeT *r);
@@ -29,10 +31,12 @@ class BST
     int count(NodeT *r);
     void nivelXnivel();
     int height(NodeT *r);
+    vector<int> ancestorsVector(int data);
 
   public:
     BST();
     ~BST();
+    BST(const BST &copy);
 
     bool search(int data);
     void add(int data);
@@ -44,6 +48,12 @@ class BST
     int height();
     void ancestors(int data);
     int whatLevelamI(int data);
+
+    queue<int> toQueue();
+    bool operator==(const BST &ABB);
+    int nearestRelative(int n1, int n2);
+    int nearestRelative2(int n1, int n2);
+    int maxWidth();
 };
 
 BST::BST()
@@ -54,6 +64,30 @@ BST::BST()
 BST::~BST()
 {
   free(root);
+}
+
+BST::BST(const BST &copy)
+{
+  queue<NodeT*> nodes;
+
+  NodeT *newRoot = copy.root;
+  nodes.push(newRoot);
+
+  root = NULL;
+
+  while (!nodes.empty())
+  {
+    NodeT *curr = nodes.front();
+
+    if (curr != NULL)
+    {
+      add(curr->getData());
+      nodes.push(curr->getLeft());
+      nodes.push(curr->getRight());
+    }
+    
+    nodes.pop();
+  }
 }
 
 bool BST::search(int data)
@@ -241,6 +275,16 @@ void BST::preOrder(NodeT *r)
   }
 }
 
+void BST::preOrderQueue(NodeT *r, queue<int> &myQueue)
+{
+  if (r != NULL)
+  {
+    myQueue.push(r->getData());
+    preOrderQueue(r->getLeft(), myQueue);
+    preOrderQueue(r->getRight(), myQueue);
+  }
+}
+
 void BST::inOrder(NodeT *r)
 {
   if (r != NULL)
@@ -261,6 +305,16 @@ void BST::postOrder(NodeT *r)
   }
 }
 
+void BST::convInOrderQueue(NodeT *r, queue<int> &myQueue)
+{
+  if (r != NULL)
+  {
+    convInOrderQueue(r->getRight(), myQueue);
+    myQueue.push(r->getData());
+    convInOrderQueue(r->getLeft(), myQueue);
+  }
+}
+
 void BST::print(int x)
 {
   switch (x)
@@ -278,8 +332,8 @@ void BST::print(int x)
       printLeaves(root);
       break;
     case 5:
-        nivelXnivel();
-        break;
+      nivelXnivel();
+      break;
   }
 
   cout << endl;
@@ -392,6 +446,30 @@ void BST::ancestors(int data)
   cout << "Data not in tree.\n";
 }
 
+vector<int> BST::ancestorsVector(int data)
+{
+  NodeT *curr = root;
+  vector<int> ancestors;
+  stack<int> myStack;
+
+  while (curr != NULL && curr->getData() != data)
+  {
+    myStack.push(curr->getData());
+    curr = (curr->getData() > data ? curr->getLeft() : curr->getRight());
+  }
+
+  if (curr != NULL)
+  {
+    while (!myStack.empty())
+    {
+      ancestors.emplace_back(myStack.top());
+      myStack.pop();
+    }
+  }
+
+  return ancestors;
+}
+
 int BST::whatLevelamI(int data)
 {
   NodeT* curr = root;
@@ -432,4 +510,144 @@ void BST::nivelXnivel()
     cout << curr->getData() << " ";
     myQueue.pop();
   }
+}
+
+queue<int> BST::toQueue()
+{
+  queue<int> myQueue;
+
+  convInOrderQueue(root, myQueue);
+
+  return myQueue;
+}
+
+bool BST::operator==(const BST &ABB)
+{
+  BST temp = ABB;
+  queue<int> q1, q2;
+  int size;
+
+  preOrderQueue(root, q1);
+  preOrderQueue(temp.root, q2);
+
+  if (q1.size() != q2.size())
+  {
+    return false;
+  }
+  else
+  {
+    size = q1.size();
+    for (int i = 0; i < size; i++)
+    {
+      if (q1.front() != q2.front())
+      {
+        return false;
+      }
+
+      q1.pop();
+      q2.pop();
+    }
+
+    return true;
+  }
+}
+
+// Not counting itself as an ancestor
+int BST::nearestRelative(int n1, int n2)
+{
+  vector<int> v1, v2;
+  int size1, size2;
+
+  if (!search(n1) && !search(n2))
+  {
+    return -1;
+  }
+
+  if (count(root) <= 1)
+  {
+    return -1;
+  }
+
+  v1 = ancestorsVector(n1);
+  v2 = ancestorsVector(n2);
+
+  size1 = v1.size();
+  size2 = v2.size();
+
+  for (int i = 0; i < size1; i++)
+  {
+    for (int j = 0; j < size2; j++)
+    {
+      if (v1[i] == v2[j])
+      {
+        return v1[i];
+      }
+    }
+  }
+
+  return -1;
+}
+
+// Counting itself as an ancestor
+int BST::nearestRelative2(int n1, int n2)
+{
+  NodeT *curr = root;
+
+  while (curr != NULL) 
+  {
+    int data = curr->getData();
+
+    if (n1 > data && n2 > data) 
+    {
+      curr = curr->getRight();
+    } 
+    else if (n1 < data && n2 < data)
+    {
+      curr = curr->getLeft();
+    } 
+    else 
+    {
+      return curr->getData();
+    }
+  }
+
+  return -1;
+}
+
+int BST::maxWidth()
+{
+  queue<NodeT*> nodes;
+  int width = 0;
+
+  if (root == NULL)
+  {
+    return 0;
+  }
+
+  nodes.push(root);
+
+  while (!nodes.empty())
+  {
+    int size = nodes.size();
+
+    width = max(size, width);
+
+    while (size--)
+    {
+      NodeT *curr = nodes.front();
+      nodes.pop();
+
+      if (curr->getLeft() != NULL)
+      {
+        nodes.push(curr->getLeft());
+      }
+
+      if (curr->getRight() != NULL)
+      {
+        nodes.push(curr->getRight());
+      }
+    }
+  }
+
+  return width;
 }
