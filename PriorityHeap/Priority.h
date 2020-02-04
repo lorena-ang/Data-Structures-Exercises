@@ -194,10 +194,10 @@ bool Priority::empty()
 
 void Priority::print()
 {
-  for (int i = 0; i < heap.size(); ++i) 
+  for (int i = 0; i < heap.size(); ++i)
   {
-		cout << heap[i] << " ";
-	}
-
-	cout << endl;
+    cout << heap[i] << " ";	    
+  }
+	
+  cout << endl;
 }
